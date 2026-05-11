@@ -178,6 +178,19 @@ func buildInbound(nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerCon
 	return in.Build()
 }
 
+// buildVLessFallbacks converts fallback config from panel into Xray VLessInboundFallback list
+func buildVLessFallbacks(raw json.RawMessage) []*coreConf.VLessInboundFallback {
+	if len(raw) == 0 {
+		return nil
+	}
+	parsedRaw := extractPanelFallbacksToBytes(raw)
+	var fallbacks []*coreConf.VLessInboundFallback
+	if err := json.Unmarshal(parsedRaw, &fallbacks); err != nil {
+		return nil
+	}
+	return fallbacks
+}
+
 func buildVLess(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
 	v := nodeInfo.Common
 	inbound.Protocol = "vless"
@@ -201,9 +214,26 @@ func buildVLess(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig)
 			return fmt.Errorf("vless decryption method %s is not support", nodeInfo.Common.Encryption)
 		}
 	}
-	s, err := json.Marshal(&coreConf.VLessInboundConfig{
-		Decryption: decryption,
-	})
+	var fallbacks []*coreConf.VLessInboundFallback
+	// Try parsing fallbacks from NetworkSettings only
+	if len(v.NetworkSettings) > 0 {
+		var ns map[string]json.RawMessage
+		if err := json.Unmarshal(v.NetworkSettings, &ns); err == nil {
+			if fbRaw, ok := ns["fallbacks"]; ok {
+				if nsFallbacks := buildVLessFallbacks(fbRaw); len(nsFallbacks) > 0 {
+					fallbacks = nsFallbacks
+				}
+			}
+		}
+	}
+
+	vlessConfig := map[string]interface{}{
+		"decryption": decryption,
+	}
+	if len(fallbacks) > 0 {
+		vlessConfig["fallbacks"] = fallbacks
+	}
+	s, err := json.Marshal(vlessConfig)
 	if err != nil {
 		return fmt.Errorf("marshal vless config error: %s", err)
 	}
@@ -295,7 +325,25 @@ func buildVMess(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig)
 func buildTrojan(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
 	inbound.Protocol = "trojan"
 	v := nodeInfo.Common
-	s, err := json.Marshal(&coreConf.TrojanServerConfig{})
+
+	var fallbacks []*coreConf.TrojanInboundFallback
+	// Try parsing fallbacks from NetworkSettings only
+	if len(v.NetworkSettings) > 0 {
+		var ns map[string]json.RawMessage
+		if err := json.Unmarshal(v.NetworkSettings, &ns); err == nil {
+			if fbRaw, ok := ns["fallbacks"]; ok {
+				if nsFallbacks := buildTrojanFallbacks(fbRaw); len(nsFallbacks) > 0 {
+					fallbacks = nsFallbacks
+				}
+			}
+		}
+	}
+
+	trojanConfig := map[string]interface{}{}
+	if len(fallbacks) > 0 {
+		trojanConfig["fallbacks"] = fallbacks
+	}
+	s, err := json.Marshal(trojanConfig)
 	if err != nil {
 		return fmt.Errorf("marshal trojan settings error: %s", err)
 	}
@@ -518,4 +566,16 @@ func buildAnyTLS(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig
 		return fmt.Errorf("marshal anytls settings error: %s", err)
 	}
 	return nil
+}
+
+func buildTrojanFallbacks(raw json.RawMessage) []*coreConf.TrojanInboundFallback {
+	if len(raw) == 0 {
+		return nil
+	}
+	parsedRaw := extractPanelFallbacksToBytes(raw)
+	var fallbacks []*coreConf.TrojanInboundFallback
+	if err := json.Unmarshal(parsedRaw, &fallbacks); err != nil {
+		return nil
+	}
+	return fallbacks
 }

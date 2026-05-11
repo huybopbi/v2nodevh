@@ -4,14 +4,13 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
-
-	"encoding/json"
 )
 
 // Security type
@@ -92,7 +91,8 @@ type TlsSettings struct {
 	KeyFile          string   `json:"key_file"`
 	Provider         string   `json:"provider"`
 	DNSEnv           string   `json:"dns_env"`
-	RejectUnknownSni string   `json:"reject_unknown_sni"`
+	RejectUnknownSni string          `json:"reject_unknown_sni"`
+	Fallbacks        json.RawMessage `json:"fallbacks,omitempty"`
 }
 
 type CertInfo struct {
