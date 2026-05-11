@@ -339,9 +339,9 @@ func buildTrojan(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig
 		}
 	}
 
-	trojanConfig := map[string]interface{}{}
+	trojanConfig := &coreConf.TrojanServerConfig{}
 	if len(fallbacks) > 0 {
-		trojanConfig["fallbacks"] = fallbacks
+		trojanConfig.Fallbacks = fallbacks
 	}
 	s, err := json.Marshal(trojanConfig)
 	if err != nil {
