@@ -176,23 +176,23 @@ install_base() {
             echo "Đang cài nguồn EPEL..."
             yum install -y epel-release >/dev/null 2>&1
         fi
-        need_install_yum wget curl unzip tar cronie socat ca-certificates pv
+        need_install_yum wget curl unzip tar cronie socat ca-certificates pv nano
         update-ca-trust force-enable >/dev/null 2>&1 || true
     elif [[ x"${release}" == x"alpine" ]]; then
-        need_install_apk wget curl unzip tar socat ca-certificates pv
+        need_install_apk wget curl unzip tar socat ca-certificates pv nano
         update-ca-certificates >/dev/null 2>&1 || true
     elif [[ x"${release}" == x"debian" ]]; then
-        need_install_apt wget curl unzip tar cron socat ca-certificates pv
+        need_install_apt wget curl unzip tar cron socat ca-certificates pv nano
         update-ca-certificates >/dev/null 2>&1 || true
     elif [[ x"${release}" == x"ubuntu" ]]; then
-        need_install_apt wget curl unzip tar cron socat ca-certificates pv
+        need_install_apt wget curl unzip tar cron socat ca-certificates pv nano
         update-ca-certificates >/dev/null 2>&1 || true
     elif [[ x"${release}" == x"arch" ]]; then
         echo "Đang cập nhật cơ sở dữ liệu gói..."
         pacman -Sy --noconfirm >/dev/null 2>&1
         # --needed sẽ bỏ qua các gói đã cài đặt
         echo "Đang cài các gói cần thiết..."
-        pacman -S --noconfirm --needed wget curl unzip tar cronie socat ca-certificates pv >/dev/null 2>&1
+        pacman -S --noconfirm --needed wget curl unzip tar cronie socat ca-certificates pv nano >/dev/null 2>&1
     fi
 }
 

@@ -136,7 +136,7 @@ update() {
 
 config() {
     echo "v2node sẽ tự thử khởi động lại sau khi sửa cấu hình"
-    vi /etc/v2node/config.json
+    nano /etc/v2node/config.json
     sleep 2
     restart
     check_status
