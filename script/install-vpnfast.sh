@@ -9,29 +9,49 @@ plain='\033[0m'
 API_HOST="https://my.vpnfast.org/"
 API_KEY="huydzvclhahahaha"
 INSTALL_URL="https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/install.sh"
+MANAGER_URL="https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/v2node-manager.sh"
+MANAGER_TARGET="${V2NODE_MANAGER_TARGET:-/usr/bin/v2node-manager}"
 
 VERSION_ARG=""
 NODE_ID_ARG="${NODE_ID:-}"
 DRY_RUN=false
+INSTALL_MANAGER=true
+RUN_MANAGER=false
+MANAGER_ARGS=()
 
 usage() {
 	echo "Cách dùng: $0 [phiên bản] --node-id ID"
+	echo "          $0 manager [lệnh manager]"
 	echo ""
 	echo "Ví dụ:"
 	echo "  bash $0 --node-id 1"
 	echo "  bash $0 v1.2.3 --node-id 1"
+	echo "  bash $0 manager"
+	echo "  bash $0 manager add"
 	echo ""
 	echo "Thông số cài sẵn:"
 	echo "  ApiHost: ${API_HOST}"
 	echo "  ApiKey:  ${API_KEY}"
+	echo ""
+	echo "Sau khi cài v2node, script sẽ tự cài kèm command: v2node-manager"
 }
 
 parse_args() {
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
+		manager | --manager)
+			RUN_MANAGER=true
+			shift
+			MANAGER_ARGS=("$@")
+			break
+			;;
 		--node-id)
 			NODE_ID_ARG="${2:-}"
 			shift 2
+			;;
+		--no-manager)
+			INSTALL_MANAGER=false
+			shift
 			;;
 		--dry-run)
 			DRY_RUN=true
@@ -91,8 +111,60 @@ install_script_command() {
 	INSTALL_CMD+=(--api-host "${API_HOST}" --node-id "${NODE_ID_ARG}" --api-key "${API_KEY}")
 }
 
+local_manager_path() {
+	local script_dir
+	script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	if [[ -f "${script_dir}/v2node-manager.sh" ]]; then
+		printf '%s' "${script_dir}/v2node-manager.sh"
+	fi
+	return 0
+}
+
+install_manager() {
+	local local_manager
+	local_manager="$(local_manager_path)"
+
+	if [[ "${DRY_RUN}" == "true" ]]; then
+		if [[ -n "${local_manager}" ]]; then
+			printf 'cp %q %q && chmod +x %q\n' "${local_manager}" "${MANAGER_TARGET}" "${MANAGER_TARGET}"
+		else
+			printf 'curl -Ls %q -o %q && chmod +x %q\n' "${MANAGER_URL}" "${MANAGER_TARGET}" "${MANAGER_TARGET}"
+		fi
+		return
+	fi
+
+	echo -e "${yellow}Đang cài command v2node-manager...${plain}"
+	if [[ -n "${local_manager}" ]]; then
+		cp "${local_manager}" "${MANAGER_TARGET}"
+	else
+		curl -Ls "${MANAGER_URL}" -o "${MANAGER_TARGET}"
+	fi
+	chmod +x "${MANAGER_TARGET}"
+	echo -e "${green}Đã cài v2node-manager tại ${MANAGER_TARGET}.${plain}"
+}
+
+run_manager() {
+	if [[ ! -x "${MANAGER_TARGET}" ]]; then
+		install_manager
+	fi
+
+	if [[ "${DRY_RUN}" == "true" ]]; then
+		printf '%q ' "${MANAGER_TARGET}" "${MANAGER_ARGS[@]}"
+		echo
+		return
+	fi
+
+	exec "${MANAGER_TARGET}" "${MANAGER_ARGS[@]}"
+}
+
 main() {
 	parse_args "$@"
+
+	if [[ "${RUN_MANAGER}" == "true" ]]; then
+		run_manager
+		return
+	fi
+
 	prompt_node_id
 	validate_node_id
 	install_script_command
@@ -104,10 +176,17 @@ main() {
 	if [[ "${DRY_RUN}" == "true" ]]; then
 		printf '%q ' "${INSTALL_CMD[@]}"
 		echo
+		if [[ "${INSTALL_MANAGER}" == "true" ]]; then
+			install_manager
+		fi
 		return
 	fi
 
 	"${INSTALL_CMD[@]}"
+	if [[ "${INSTALL_MANAGER}" == "true" ]]; then
+		install_manager
+		echo -e "${green}Bạn có thể chạy menu quản lý bằng lệnh: v2node-manager${plain}"
+	fi
 }
 
 main "$@"

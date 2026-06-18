@@ -69,6 +69,8 @@ bash script/v2node-manager.sh status
 - `ApiHost`: `https://my.vpnfast.org/`
 - `ApiKey`: `huydzvclhahahaha`
 
+Sau khi cài xong, script sẽ tự cài kèm command `v2node-manager` để dùng các chức năng quản lý nâng cao như thêm/xóa/sửa node, xem config và khôi phục backup.
+
 Khi chạy chỉ cần truyền `NodeID`:
 
 ```bash
@@ -79,6 +81,19 @@ Có thể chỉ định phiên bản:
 
 ```bash
 bash <(curl -Ls https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/install-vpnfast.sh) v1.2.3 --node-id 1
+```
+
+Mở manager sau khi đã cài:
+
+```bash
+v2node-manager
+```
+
+Hoặc gọi manager thông qua script VPNFast:
+
+```bash
+bash <(curl -Ls https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/install-vpnfast.sh) manager
+bash <(curl -Ls https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/install-vpnfast.sh) manager add
 ```
 
 ## Build
