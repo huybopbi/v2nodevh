@@ -107,7 +107,7 @@ before_show_menu() {
 }
 
 install() {
-    bash <(curl -Ls https://raw.githubusercontent.com/wyx2685/v2node/master/script/install.sh)
+    bash <(curl -Ls https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/install.sh)
     if [[ $? == 0 ]]; then
         if [[ $# == 0 ]]; then
             start
@@ -123,7 +123,7 @@ update() {
     else
         version=$2
     fi
-    bash <(curl -Ls https://raw.githubusercontent.com/wyx2685/v2node/master/script/install.sh) $version
+    bash <(curl -Ls https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/install.sh) $version
     if [[ $? == 0 ]]; then
         echo -e "${green}Cập nhật hoàn tất, v2node đã tự khởi động lại. Vui lòng dùng v2node log để xem log vận hành${plain}"
         exit
@@ -307,7 +307,7 @@ show_log() {
 }
 
 update_shell() {
-    wget -O /usr/bin/v2node -N --no-check-certificate https://raw.githubusercontent.com/wyx2685/v2node/master/script/v2node.sh
+    wget -O /usr/bin/v2node -N --no-check-certificate https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/v2node.sh
     if [[ $? != 0 ]]; then
         echo ""
         echo -e "${red}Tải script thất bại, vui lòng kiểm tra máy có thể kết nối GitHub không${plain}"
@@ -513,7 +513,7 @@ show_usage() {
 show_menu() {
     echo -e "
   ${green}Script quản lý backend v2node,${plain} ${red}không áp dụng cho Docker${plain}
---- https://github.com/wyx2685/v2node ---
+--- https://github.com/huybopbi/v2nodevh ---
   ${green}0.${plain} Sửa cấu hình
 ————————————————
   ${green}1.${plain} Cài đặt v2node
