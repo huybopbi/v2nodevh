@@ -125,7 +125,7 @@ func (c *Client) GetNodeInfo(ctx context.Context) (node *NodeInfo, err error) {
 		return nil, err
 	}
 	if r == nil {
-		return nil, fmt.Errorf("received nil response")
+		return nil, fmt.Errorf("nhận response nil")
 	}
 
 	if r.StatusCode() == 304 {
@@ -146,7 +146,7 @@ func (c *Client) GetNodeInfo(ctx context.Context) (node *NodeInfo, err error) {
 			}
 		}()
 	} else {
-		return nil, fmt.Errorf("received nil response")
+		return nil, fmt.Errorf("nhận response nil")
 	}
 	node = &NodeInfo{
 		Id: c.NodeId,
@@ -155,7 +155,7 @@ func (c *Client) GetNodeInfo(ctx context.Context) (node *NodeInfo, err error) {
 	cm := &CommonNode{}
 	err = json.Unmarshal(r.Body(), cm)
 	if err != nil {
-		return nil, fmt.Errorf("decode node params error: %s", err)
+		return nil, fmt.Errorf("lỗi giải mã tham số node: %s", err)
 	}
 	switch cm.Protocol {
 	case "vmess", "trojan", "hysteria2", "tuic", "anytls", "vless":
@@ -165,7 +165,7 @@ func (c *Client) GetNodeInfo(ctx context.Context) (node *NodeInfo, err error) {
 		node.Type = cm.Protocol
 		node.Security = 0
 	default:
-		return nil, fmt.Errorf("unsupport protocol: %s", cm.Protocol)
+		return nil, fmt.Errorf("giao thức không được hỗ trợ: %s", cm.Protocol)
 	}
 	node.Tag = fmt.Sprintf("[%s]-%s:%d", c.APIHost, node.Type, node.Id)
 	cf := cm.TlsSettings.CertFile

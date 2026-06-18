@@ -23,7 +23,7 @@ func buildDefaultOutbound() (*core.OutboundHandlerConfig, error) {
 	var setting json.RawMessage
 	setting, err := json.Marshal(proxySetting)
 	if err != nil {
-		return nil, fmt.Errorf("marshal proxy config error: %s", err)
+		return nil, fmt.Errorf("lỗi mã hóa cấu hình proxy: %s", err)
 	}
 	outboundDetourConfig.Settings = &setting
 	return outboundDetourConfig.Build()

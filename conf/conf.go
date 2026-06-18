@@ -43,16 +43,16 @@ func New() *Conf {
 func (p *Conf) LoadFromPath(filePath string) error {
 	f, err := os.Open(filePath)
 	if err != nil {
-		return fmt.Errorf("open config file error: %s", err)
+		return fmt.Errorf("lỗi mở file cấu hình: %s", err)
 	}
 	defer f.Close()
 	v := viper.New()
 	v.SetConfigFile(filePath)
 	if err := v.ReadInConfig(); err != nil {
-		return fmt.Errorf("read config file error: %s", err)
+		return fmt.Errorf("lỗi đọc file cấu hình: %s", err)
 	}
 	if err := v.Unmarshal(p); err != nil {
-		return fmt.Errorf("unmarshal config error: %s", err)
+		return fmt.Errorf("lỗi phân tích cấu hình: %s", err)
 	}
 	for i := range p.NodeConfigs {
 		if p.NodeConfigs[i].RetryCount == nil {

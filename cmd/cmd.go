@@ -13,6 +13,6 @@ var command = &cobra.Command{
 func Run() {
 	err := command.Execute()
 	if err != nil {
-		log.WithField("err", err).Error("Execute command failed")
+		log.WithField("err", err).Error("Thực thi lệnh thất bại")
 	}
 }

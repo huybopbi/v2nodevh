@@ -19,12 +19,12 @@ import (
 func (c *Controller) renewCertTask(_ context.Context) error {
 	l, err := NewLego(c.info.Common.CertInfo)
 	if err != nil {
-		log.WithField("tag", c.tag).Info("new lego error: ", err)
+		log.WithField("tag", c.tag).Info("Lỗi tạo lego mới: ", err)
 		return nil
 	}
 	err = l.RenewCert()
 	if err != nil {
-		log.WithField("tag", c.tag).Info("renew cert error: ", err)
+		log.WithField("tag", c.tag).Info("Lỗi gia hạn chứng chỉ: ", err)
 		return nil
 	}
 	return nil
@@ -36,26 +36,26 @@ func (c *Controller) requestCert() error {
 	case "none", "":
 	case "file":
 		if cert.CertFile == "" || cert.KeyFile == "" {
-			return fmt.Errorf("cert file path or key file path not exist")
+			return fmt.Errorf("đường dẫn file chứng chỉ hoặc file key không tồn tại")
 		}
 	case "dns", "http":
 		if cert.CertFile == "" || cert.KeyFile == "" {
-			return fmt.Errorf("cert file path or key file path not exist")
+			return fmt.Errorf("đường dẫn file chứng chỉ hoặc file key không tồn tại")
 		}
 		if file.IsExist(cert.CertFile) && file.IsExist(cert.KeyFile) {
 			return nil
 		}
 		l, err := NewLego(cert)
 		if err != nil {
-			return fmt.Errorf("create lego object error: %s", err)
+			return fmt.Errorf("lỗi tạo đối tượng lego: %s", err)
 		}
 		err = l.CreateCert()
 		if err != nil {
-			return fmt.Errorf("create lego cert error: %s", err)
+			return fmt.Errorf("lỗi tạo chứng chỉ lego: %s", err)
 		}
 	case "self":
 		if cert.CertFile == "" || cert.KeyFile == "" {
-			return fmt.Errorf("cert file path or key file path not exist")
+			return fmt.Errorf("đường dẫn file chứng chỉ hoặc file key không tồn tại")
 		}
 		if file.IsExist(cert.CertFile) && file.IsExist(cert.KeyFile) {
 			return nil
@@ -65,10 +65,10 @@ func (c *Controller) requestCert() error {
 			cert.CertFile,
 			cert.KeyFile)
 		if err != nil {
-			return fmt.Errorf("generate self cert error: %s", err)
+			return fmt.Errorf("lỗi tạo chứng chỉ tự ký: %s", err)
 		}
 	default:
-		return fmt.Errorf("unsupported certmode: %s", cert.CertMode)
+		return fmt.Errorf("certmode không được hỗ trợ: %s", cert.CertMode)
 	}
 	return nil
 }

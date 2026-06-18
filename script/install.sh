@@ -8,7 +8,7 @@ plain='\033[0m'
 cur_dir=$(pwd)
 
 # check root
-[[ $EUID -ne 0 ]] && echo -e "${red}错误：${plain} 必须使用root用户运行此脚本！\n" && exit 1
+[[ $EUID -ne 0 ]] && echo -e "${red}Lỗi:${plain} Bạn phải chạy script này bằng người dùng root!\n" && exit 1
 
 # check os
 if [[ -f /etc/redhat-release ]]; then
@@ -30,11 +30,11 @@ elif cat /proc/version | grep -Eqi "centos|red hat|redhat|rocky|alma|oracle linu
 elif cat /proc/version | grep -Eqi "arch"; then
     release="arch"
 else
-    echo -e "${red}未检测到系统版本，请联系脚本作者！${plain}\n" && exit 1
+    echo -e "${red}Không phát hiện được phiên bản hệ điều hành, vui lòng liên hệ tác giả script!${plain}\n" && exit 1
 fi
 
 ########################
-# 参数解析
+# Phân tích tham số
 ########################
 VERSION_ARG=""
 API_HOST_ARG=""
@@ -51,12 +51,12 @@ parse_args() {
             --api-key)
                 API_KEY_ARG="$2"; shift 2 ;;
             -h|--help)
-                echo "用法: $0 [版本号] [--api-host URL] [--node-id ID] [--api-key KEY]"
+                echo "Cách dùng: $0 [phiên bản] [--api-host URL] [--node-id ID] [--api-key KEY]"
                 exit 0 ;;
             --*)
-                echo "未知参数: $1"; exit 1 ;;
+                echo "Tham số không xác định: $1"; exit 1 ;;
             *)
-                # 兼容第一个位置参数作为版本号
+                # Tương thích tham số vị trí đầu tiên dưới dạng phiên bản
                 if [[ -z "$VERSION_ARG" ]]; then
                     VERSION_ARG="$1"; shift
                 else
@@ -76,11 +76,11 @@ elif [[ $arch == "s390x" ]]; then
     arch="s390x"
 else
     arch="64"
-    echo -e "${red}检测架构失败，使用默认架构: ${arch}${plain}"
+    echo -e "${red}Phát hiện kiến trúc thất bại, dùng kiến trúc mặc định: ${arch}${plain}"
 fi
 
 if [ "$(getconf WORD_BIT)" != '32' ] && [ "$(getconf LONG_BIT)" != '64' ] ; then
-    echo "本软件不支持 32 位系统(x86)，请使用 64 位系统(x86_64)，如果检测有误，请联系作者"
+    echo "Phần mềm này không hỗ trợ hệ thống 32-bit (x86). Vui lòng dùng hệ thống 64-bit (x86_64); nếu phát hiện sai, hãy liên hệ tác giả"
     exit 2
 fi
 
@@ -94,28 +94,28 @@ fi
 
 if [[ x"${release}" == x"centos" ]]; then
     if [[ ${os_version} -le 6 ]]; then
-        echo -e "${red}请使用 CentOS 7 或更高版本的系统！${plain}\n" && exit 1
+        echo -e "${red}Vui lòng dùng CentOS 7 hoặc phiên bản cao hơn!${plain}\n" && exit 1
     fi
     if [[ ${os_version} -eq 7 ]]; then
-        echo -e "${red}注意： CentOS 7 无法使用hysteria1/2协议！${plain}\n"
+        echo -e "${red}Lưu ý: CentOS 7 không thể dùng giao thức hysteria1/2!${plain}\n"
     fi
 elif [[ x"${release}" == x"ubuntu" ]]; then
     if [[ ${os_version} -lt 16 ]]; then
-        echo -e "${red}请使用 Ubuntu 16 或更高版本的系统！${plain}\n" && exit 1
+        echo -e "${red}Vui lòng dùng Ubuntu 16 hoặc phiên bản cao hơn!${plain}\n" && exit 1
     fi
 elif [[ x"${release}" == x"debian" ]]; then
     if [[ ${os_version} -lt 8 ]]; then
-        echo -e "${red}请使用 Debian 8 或更高版本的系统！${plain}\n" && exit 1
+        echo -e "${red}Vui lòng dùng Debian 8 hoặc phiên bản cao hơn!${plain}\n" && exit 1
     fi
 fi
 
 install_base() {
-    # 优化版本：批量检查和安装包，减少系统调用
+    # Phiên bản tối ưu: kiểm tra và cài đặt gói theo lô để giảm system call
     need_install_apt() {
         local packages=("$@")
         local missing=()
         
-        # 批量检查已安装的包
+        # Kiểm tra hàng loạt các gói đã cài đặt
         local installed_list=$(dpkg-query -W -f='${Package}\n' 2>/dev/null | sort)
         
         for p in "${packages[@]}"; do
@@ -125,7 +125,7 @@ install_base() {
         done
         
         if [[ ${#missing[@]} -gt 0 ]]; then
-            echo "安装缺失的包: ${missing[*]}"
+            echo "Đang cài các gói còn thiếu: ${missing[*]}"
             apt-get update -y >/dev/null 2>&1
             DEBIAN_FRONTEND=noninteractive apt-get install -y "${missing[@]}" >/dev/null 2>&1
         fi
@@ -135,7 +135,7 @@ install_base() {
         local packages=("$@")
         local missing=()
         
-        # 批量检查已安装的包
+        # Kiểm tra hàng loạt các gói đã cài đặt
         local installed_list=$(rpm -qa --qf '%{NAME}\n' 2>/dev/null | sort)
         
         for p in "${packages[@]}"; do
@@ -145,7 +145,7 @@ install_base() {
         done
         
         if [[ ${#missing[@]} -gt 0 ]]; then
-            echo "安装缺失的包: ${missing[*]}"
+            echo "Đang cài các gói còn thiếu: ${missing[*]}"
             yum install -y "${missing[@]}" >/dev/null 2>&1
         fi
     }
@@ -154,7 +154,7 @@ install_base() {
         local packages=("$@")
         local missing=()
         
-        # 批量检查已安装的包
+        # Kiểm tra hàng loạt các gói đã cài đặt
         local installed_list=$(apk info 2>/dev/null | sort)
         
         for p in "${packages[@]}"; do
@@ -164,16 +164,16 @@ install_base() {
         done
         
         if [[ ${#missing[@]} -gt 0 ]]; then
-            echo "安装缺失的包: ${missing[*]}"
+            echo "Đang cài các gói còn thiếu: ${missing[*]}"
             apk add --no-cache "${missing[@]}" >/dev/null 2>&1
         fi
     }
 
-    # 一次性安装所有必需的包
+    # Cài đặt một lần tất cả gói cần thiết
     if [[ x"${release}" == x"centos" ]]; then
-        # 检查并安装 epel-release
+        # Kiểm tra và cài epel-release
         if ! rpm -q epel-release >/dev/null 2>&1; then
-            echo "安装 EPEL 源..."
+            echo "Đang cài nguồn EPEL..."
             yum install -y epel-release >/dev/null 2>&1
         fi
         need_install_yum wget curl unzip tar cronie socat ca-certificates pv
@@ -188,10 +188,10 @@ install_base() {
         need_install_apt wget curl unzip tar cron socat ca-certificates pv
         update-ca-certificates >/dev/null 2>&1 || true
     elif [[ x"${release}" == x"arch" ]]; then
-        echo "更新包数据库..."
+        echo "Đang cập nhật cơ sở dữ liệu gói..."
         pacman -Sy --noconfirm >/dev/null 2>&1
-        # --needed 会跳过已安装的包，非常高效
-        echo "安装必需的包..."
+        # --needed sẽ bỏ qua các gói đã cài đặt
+        echo "Đang cài các gói cần thiết..."
         pacman -S --noconfirm --needed wget curl unzip tar cronie socat ca-certificates pv >/dev/null 2>&1
     fi
 }
@@ -241,7 +241,7 @@ generate_v2node_config() {
     ]
 }
 EOF
-        echo -e "${green}V2node 配置文件生成完成,正在重新启动服务${plain}"
+        echo -e "${green}Đã tạo xong file cấu hình V2node, đang khởi động lại dịch vụ${plain}"
         if [[ x"${release}" == x"alpine" ]]; then
             service v2node restart
         else
@@ -251,9 +251,9 @@ EOF
         check_status
         echo -e ""
         if [[ $? == 0 ]]; then
-            echo -e "${green}v2node 重启成功${plain}"
+            echo -e "${green}v2node khởi động lại thành công${plain}"
         else
-            echo -e "${red}v2node 可能启动失败，请使用 v2node log 查看日志信息${plain}"
+            echo -e "${red}v2node có thể khởi động thất bại, vui lòng dùng v2node log để xem log${plain}"
         fi
 }
 
@@ -269,22 +269,22 @@ install_v2node() {
     if  [[ -z "$version_param" ]] ; then
         last_version=$(curl -Ls "https://api.github.com/repos/wyx2685/v2node/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         if [[ ! -n "$last_version" ]]; then
-            echo -e "${red}检测 v2node 版本失败，可能是超出 Github API 限制，请稍后再试，或手动指定 v2node 版本安装${plain}"
+            echo -e "${red}Phát hiện phiên bản v2node thất bại, có thể đã vượt giới hạn GitHub API. Vui lòng thử lại sau hoặc chỉ định phiên bản v2node để cài thủ công${plain}"
             exit 1
         fi
-        echo -e "${green}检测到最新版本：${last_version}，开始安装...${plain}"
+        echo -e "${green}Phát hiện phiên bản mới nhất: ${last_version}, bắt đầu cài đặt...${plain}"
         url="https://github.com/wyx2685/v2node/releases/download/${last_version}/v2node-linux-${arch}.zip"
-        curl -sL "$url" | pv -s 30M -W -N "下载进度" > /usr/local/v2node/v2node-linux.zip
+        curl -sL "$url" | pv -s 30M -W -N "Tiến trình tải" > /usr/local/v2node/v2node-linux.zip
         if [[ $? -ne 0 ]]; then
-            echo -e "${red}下载 v2node 失败，请确保你的服务器能够下载 Github 的文件${plain}"
+            echo -e "${red}Tải v2node thất bại, vui lòng đảm bảo máy chủ có thể tải file từ GitHub${plain}"
             exit 1
         fi
     else
     last_version=$version_param
         url="https://github.com/wyx2685/v2node/releases/download/${last_version}/v2node-linux-${arch}.zip"
-        curl -sL "$url" | pv -s 30M -W -N "下载进度" > /usr/local/v2node/v2node-linux.zip
+        curl -sL "$url" | pv -s 30M -W -N "Tiến trình tải" > /usr/local/v2node/v2node-linux.zip
         if [[ $? -ne 0 ]]; then
-            echo -e "${red}下载 v2node $1 失败，请确保此版本存在${plain}"
+            echo -e "${red}Tải v2node $1 thất bại, vui lòng đảm bảo phiên bản này tồn tại${plain}"
             exit 1
         fi
     fi
@@ -316,7 +316,7 @@ depend() {
 EOF
         chmod +x /etc/init.d/v2node
         rc-update add v2node default
-        echo -e "${green}v2node ${last_version}${plain} 安装完成，已设置开机自启"
+        echo -e "${green}v2node ${last_version}${plain} đã cài đặt xong và đã bật tự khởi động"
     else
         rm /etc/systemd/system/v2node.service -f
         cat <<EOF > /etc/systemd/system/v2node.service
@@ -344,14 +344,14 @@ EOF
         systemctl daemon-reload
         systemctl stop v2node
         systemctl enable v2node
-        echo -e "${green}v2node ${last_version}${plain} 安装完成，已设置开机自启"
+        echo -e "${green}v2node ${last_version}${plain} đã cài đặt xong và đã bật tự khởi động"
     fi
 
     if [[ ! -f /etc/v2node/config.json ]]; then
-        # 如果通过 CLI 传入了完整参数，则直接生成配置并跳过交互
+        # Nếu CLI đã truyền đủ tham số, tạo cấu hình trực tiếp và bỏ qua tương tác
         if [[ -n "$API_HOST_ARG" && -n "$NODE_ID_ARG" && -n "$API_KEY_ARG" ]]; then
             generate_v2node_config "$API_HOST_ARG" "$NODE_ID_ARG" "$API_KEY_ARG"
-            echo -e "${green}已根据参数生成 /etc/v2node/config.json${plain}"
+            echo -e "${green}Đã tạo /etc/v2node/config.json theo tham số${plain}"
             first_install=false
         else
             cp config.json /etc/v2node/
@@ -367,9 +367,9 @@ EOF
         check_status
         echo -e ""
         if [[ $? == 0 ]]; then
-            echo -e "${green}v2node 重启成功${plain}"
+            echo -e "${green}v2node khởi động lại thành công${plain}"
         else
-            echo -e "${red}v2node 可能启动失败，请使用 v2node log 查看日志信息${plain}"
+            echo -e "${red}v2node có thể khởi động thất bại, vui lòng dùng v2node log để xem log${plain}"
         fi
         first_install=false
     fi
@@ -381,44 +381,44 @@ EOF
     cd $cur_dir
     rm -f install.sh
     echo "------------------------------------------"
-    echo -e "管理脚本使用方法: "
+    echo -e "Cách dùng script quản lý: "
     echo "------------------------------------------"
-    echo "v2node              - 显示管理菜单 (功能更多)"
-    echo "v2node start        - 启动 v2node"
-    echo "v2node stop         - 停止 v2node"
-    echo "v2node restart      - 重启 v2node"
-    echo "v2node status       - 查看 v2node 状态"
-    echo "v2node enable       - 设置 v2node 开机自启"
-    echo "v2node disable      - 取消 v2node 开机自启"
-    echo "v2node log          - 查看 v2node 日志"
-    echo "v2node generate     - 生成 v2node 配置文件"
-    echo "v2node update       - 更新 v2node"
-    echo "v2node update x.x.x - 更新 v2node 指定版本"
-    echo "v2node install      - 安装 v2node"
-    echo "v2node uninstall    - 卸载 v2node"
-    echo "v2node version      - 查看 v2node 版本"
+    echo "v2node              - Hiển thị menu quản lý (nhiều chức năng hơn)"
+    echo "v2node start        - Khởi động v2node"
+    echo "v2node stop         - Dừng v2node"
+    echo "v2node restart      - Khởi động lại v2node"
+    echo "v2node status       - Xem trạng thái v2node"
+    echo "v2node enable       - Bật tự khởi động v2node"
+    echo "v2node disable      - Tắt tự khởi động v2node"
+    echo "v2node log          - Xem log v2node"
+    echo "v2node generate     - Tạo file cấu hình v2node"
+    echo "v2node update       - Cập nhật v2node"
+    echo "v2node update x.x.x - Cập nhật v2node lên phiên bản chỉ định"
+    echo "v2node install      - Cài đặt v2node"
+    echo "v2node uninstall    - Gỡ cài đặt v2node"
+    echo "v2node version      - Xem phiên bản v2node"
     echo "------------------------------------------"
     curl -fsS --max-time 10 "https://api.v-50.me/counter" || true
 
     if [[ $first_install == true ]]; then
-        read -rp "检测到你为第一次安装 v2node，是否自动生成 /etc/v2node/config.json？(y/n): " if_generate
+        read -rp "Phát hiện đây là lần cài đặt v2node đầu tiên, bạn có muốn tự động tạo /etc/v2node/config.json không? (y/n): " if_generate
         if [[ "$if_generate" =~ ^[Yy]$ ]]; then
-            # 交互式收集参数，提供示例默认值
-            read -rp "面板API地址[格式: https://example.com/]: " api_host
+            # Thu thập tham số tương tác, cung cấp giá trị mặc định ví dụ
+            read -rp "Địa chỉ API panel [định dạng: https://example.com/]: " api_host
             api_host=${api_host:-https://example.com/}
-            read -rp "节点ID: " node_id
+            read -rp "ID node: " node_id
             node_id=${node_id:-1}
-            read -rp "节点通讯密钥: " api_key
+            read -rp "Khóa giao tiếp node: " api_key
 
-            # 生成配置文件（覆盖可能从包中复制的模板）
+            # Tạo file cấu hình (ghi đè template có thể đã được copy từ gói)
             generate_v2node_config "$api_host" "$node_id" "$api_key"
         else
-            echo "${green}已跳过自动生成配置。如需后续生成，可执行: v2node generate${plain}"
+            echo "${green}Đã bỏ qua tạo cấu hình tự động. Nếu cần tạo sau, hãy chạy: v2node generate${plain}"
         fi
     fi
 }
 
 parse_args "$@"
-echo -e "${green}开始安装${plain}"
+echo -e "${green}Bắt đầu cài đặt${plain}"
 install_base
 install_v2node "$VERSION_ARG"

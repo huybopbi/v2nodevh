@@ -9,12 +9,12 @@ import (
 var (
 	version  = "TempVersion" //use ldflags replace
 	codename = "v2node"
-	intro    = "A V2board backend based on modified xray-core"
+	intro    = "Backend V2board dựa trên xray-core đã chỉnh sửa"
 )
 
 var versionCommand = cobra.Command{
 	Use:   "version",
-	Short: "Print version info",
+	Short: "In thông tin phiên bản",
 	Run: func(_ *cobra.Command, _ []string) {
 		showVersion()
 	},

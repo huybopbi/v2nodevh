@@ -29,15 +29,15 @@ func (v *V2Core) GetUserManager(tag string) (proxy.UserManager, error) {
 	defer cancel()
 	handler, err := v.ihm.GetHandler(ctx, tag)
 	if err != nil {
-		return nil, fmt.Errorf("no such inbound tag: %s", err)
+		return nil, fmt.Errorf("không có inbound tag này: %s", err)
 	}
 	inboundInstance, ok := handler.(proxy.GetInbound)
 	if !ok {
-		return nil, fmt.Errorf("handler %s is not implement proxy.GetInbound", tag)
+		return nil, fmt.Errorf("handler %s chưa implement proxy.GetInbound", tag)
 	}
 	userManager, ok := inboundInstance.GetInbound().(proxy.UserManager)
 	if !ok {
-		return nil, fmt.Errorf("handler %s is not implement proxy.UserManager", tag)
+		return nil, fmt.Errorf("handler %s chưa implement proxy.UserManager", tag)
 	}
 	return userManager, nil
 }
@@ -45,7 +45,7 @@ func (v *V2Core) GetUserManager(tag string) (proxy.UserManager, error) {
 func (vc *V2Core) DelUsers(users []panel.UserInfo, tag string, _ *panel.NodeInfo) error {
 	userManager, err := vc.GetUserManager(tag)
 	if err != nil {
-		return fmt.Errorf("get user manager error: %s", err)
+		return fmt.Errorf("lỗi lấy user manager: %s", err)
 	}
 	var user string
 	vc.users.mapLock.Lock()
@@ -132,11 +132,11 @@ func (v *V2Core) AddUsers(p *AddUsersParams) (added int, err error) {
 	case "anytls":
 		users = buildAnyTLSUsers(p.Tag, p.Users)
 	default:
-		return 0, fmt.Errorf("unsupported node type: %s", p.NodeInfo.Type)
+		return 0, fmt.Errorf("loại node không được hỗ trợ: %s", p.NodeInfo.Type)
 	}
 	man, err := v.GetUserManager(p.Tag)
 	if err != nil {
-		return 0, fmt.Errorf("get user manager error: %s", err)
+		return 0, fmt.Errorf("lỗi lấy user manager: %s", err)
 	}
 	for _, u := range users {
 		mUser, err := u.ToMemoryUser()

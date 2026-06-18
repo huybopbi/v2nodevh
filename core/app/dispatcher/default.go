@@ -31,7 +31,7 @@ import (
 	"github.com/xtls/xray-core/transport/pipe"
 )
 
-var errSniffingTimeout = errors.New("timeout on sniffing")
+var errSniffingTimeout = errors.New("sniffing hết thời gian chờ")
 
 type cachedReader struct {
 	sync.Mutex
@@ -172,24 +172,24 @@ func (d *DefaultDispatcher) getLink(ctx context.Context) (*transport.Link, *tran
 	if user != nil && len(user.Email) > 0 {
 		limit, err = limiter.GetLimiter(sessionInbound.Tag)
 		if err != nil {
-			errors.LogInfo(ctx, "get limiter ", sessionInbound.Tag, " error: ", err)
+			errors.LogInfo(ctx, "lỗi lấy limiter ", sessionInbound.Tag, ": ", err)
 			common.Close(outboundLink.Writer)
 			common.Close(inboundLink.Writer)
 			common.Interrupt(outboundLink.Reader)
 			common.Interrupt(inboundLink.Reader)
-			return nil, nil, nil, errors.New("get limiter ", sessionInbound.Tag, " error: ", err)
+			return nil, nil, nil, errors.New("lỗi lấy limiter ", sessionInbound.Tag, ": ", err)
 		}
 		// Speed Limit and Device Limit
 		w, reject := limit.CheckLimit(user.Email,
 			sessionInbound.Source.Address.IP().String(),
 			sessionInbound.Source.Network == net.Network_TCP)
 		if reject {
-			errors.LogInfo(ctx, "Limited ", user.Email, " by conn or ip")
+			errors.LogInfo(ctx, "Đã giới hạn ", user.Email, " theo kết nối hoặc IP")
 			common.Close(outboundLink.Writer)
 			common.Close(inboundLink.Writer)
 			common.Interrupt(outboundLink.Reader)
 			common.Interrupt(inboundLink.Reader)
-			return nil, nil, nil, errors.New("Limited ", user.Email, " by conn or ip")
+			return nil, nil, nil, errors.New("Đã giới hạn ", user.Email, " theo kết nối hoặc IP")
 		}
 		var lm *LinkManager
 		if lmloaded, ok := d.LinkManagers.Load(user.Email); !ok {
@@ -256,7 +256,7 @@ func (d *DefaultDispatcher) shouldOverride(ctx context.Context, result SniffResu
 		}
 		if fkr0, ok := d.fdns.(dns.FakeDNSEngineRev0); ok && protocolString != "bittorrent" && p == "fakedns" &&
 			destination.Address.Family().IsIP() && fkr0.IsIPInIPPool(destination.Address) {
-			errors.LogInfo(ctx, "Using sniffer ", protocolString, " since the fake DNS missed")
+			errors.LogInfo(ctx, "Dùng sniffer ", protocolString, " vì fake DNS bị miss")
 			return true
 		}
 		if resultSubset, ok := result.(SnifferIsProtoSubsetOf); ok {
@@ -272,7 +272,7 @@ func (d *DefaultDispatcher) shouldOverride(ctx context.Context, result SniffResu
 // Dispatch implements routing.Dispatcher.
 func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destination) (*transport.Link, error) {
 	if !destination.IsValid() {
-		panic("Dispatcher: Invalid destination.")
+		panic("Dispatcher: destination không hợp lệ.")
 	}
 	outbounds := session.OutboundsFromContext(ctx)
 	if len(outbounds) == 0 {
@@ -306,7 +306,7 @@ func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destin
 			}
 			if err == nil && d.shouldOverride(ctx, result, sniffingRequest, destination) {
 				domain := result.Domain()
-				errors.LogInfo(ctx, "sniffed domain: ", domain)
+				errors.LogInfo(ctx, "Domain sniff được: ", domain)
 				destination.Address = net.ParseAddress(domain)
 				protocol := result.Protocol()
 				if resComp, ok := result.(SnifferResultComposite); ok {
@@ -331,7 +331,7 @@ func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destin
 // DispatchLink implements routing.Dispatcher.
 func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.Destination, outbound *transport.Link) error {
 	if !destination.IsValid() {
-		return errors.New("Dispatcher: Invalid destination.")
+		return errors.New("Dispatcher: destination không hợp lệ.")
 	}
 	outbounds := session.OutboundsFromContext(ctx)
 	if len(outbounds) == 0 {
@@ -358,20 +358,20 @@ func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.De
 	if user != nil && len(user.Email) > 0 {
 		limit, err = limiter.GetLimiter(sessionInbound.Tag)
 		if err != nil {
-			errors.LogInfo(ctx, "get limiter ", sessionInbound.Tag, " error: ", err)
+			errors.LogInfo(ctx, "lỗi lấy limiter ", sessionInbound.Tag, ": ", err)
 			common.Close(outbound.Writer)
 			common.Interrupt(outbound.Reader)
-			return errors.New("get limiter ", sessionInbound.Tag, " error: ", err)
+			return errors.New("lỗi lấy limiter ", sessionInbound.Tag, ": ", err)
 		}
 		// Speed Limit and Device Limit
 		w, reject := limit.CheckLimit(user.Email,
 			sessionInbound.Source.Address.IP().String(),
 			sessionInbound.Source.Network == net.Network_TCP)
 		if reject {
-			errors.LogInfo(ctx, "Limited ", user.Email, " by conn or ip")
+			errors.LogInfo(ctx, "Đã giới hạn ", user.Email, " theo kết nối hoặc IP")
 			common.Close(outbound.Writer)
 			common.Interrupt(outbound.Reader)
-			return errors.New("Limited ", user.Email, " by conn or ip")
+			return errors.New("Đã giới hạn ", user.Email, " theo kết nối hoặc IP")
 		}
 		var lm *LinkManager
 		if lmloaded, ok := d.LinkManagers.Load(user.Email); !ok {
@@ -426,7 +426,7 @@ func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.De
 		}
 		if err == nil && d.shouldOverride(ctx, result, sniffingRequest, destination) {
 			domain := result.Domain()
-			errors.LogInfo(ctx, "sniffed domain: ", domain)
+			errors.LogInfo(ctx, "Domain sniff được: ", domain)
 			destination.Address = net.ParseAddress(domain)
 			protocol := result.Protocol()
 			if resComp, ok := result.(SnifferResultComposite); ok {
@@ -517,10 +517,10 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 		ctx = session.SetForcedOutboundTagToContext(ctx, "")
 		if h := d.ohm.GetHandler(forcedOutboundTag); h != nil {
 			isPickRoute = 1
-			errors.LogInfo(ctx, "taking platform initialized detour [", forcedOutboundTag, "] for [", destination, "]")
+			errors.LogInfo(ctx, "Dùng detour do platform khởi tạo [", forcedOutboundTag, "] cho [", destination, "]")
 			handler = h
 		} else {
-			errors.LogError(ctx, "non existing tag for platform initialized detour: ", forcedOutboundTag)
+			errors.LogError(ctx, "Tag không tồn tại cho detour do platform khởi tạo: ", forcedOutboundTag)
 			common.Close(link.Writer)
 			common.Interrupt(link.Reader)
 			return
@@ -531,19 +531,19 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 			if h := d.ohm.GetHandler(outTag); h != nil {
 				isPickRoute = 2
 				if route.GetRuleTag() == "" {
-					errors.LogInfo(ctx, "taking detour [", outTag, "] for [", destination, "]")
+					errors.LogInfo(ctx, "Dùng detour [", outTag, "] cho [", destination, "]")
 				} else {
-					errors.LogInfo(ctx, "Hit route rule: [", route.GetRuleTag(), "] so taking detour [", outTag, "] for [", destination, "]")
+					errors.LogInfo(ctx, "Khớp route rule: [", route.GetRuleTag(), "] nên dùng detour [", outTag, "] cho [", destination, "]")
 				}
 				handler = h
 			} else {
-				errors.LogWarning(ctx, "non existing outTag: ", outTag)
+				errors.LogWarning(ctx, "outTag không tồn tại: ", outTag)
 				common.Close(link.Writer)
 				common.Interrupt(link.Reader)
 				return // DO NOT CHANGE: the traffic shouldn't be processed by default outbound if the specified outbound tag doesn't exist (yet), e.g., VLESS Reverse Proxy
 			}
 		} else {
-			errors.LogInfo(ctx, "default route for ", destination)
+			errors.LogInfo(ctx, "Route mặc định cho ", destination)
 		}
 	}
 
@@ -552,7 +552,7 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 	}
 
 	if handler == nil {
-		errors.LogInfo(ctx, "default outbound handler not exist")
+		errors.LogInfo(ctx, "Outbound handler mặc định không tồn tại")
 		common.Close(link.Writer)
 		common.Interrupt(link.Reader)
 		return

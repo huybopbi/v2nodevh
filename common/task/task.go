@@ -47,7 +47,7 @@ func (t *Task) Start(first bool) error {
 			}
 
 			if err := t.ExecuteWithTimeout(); err != nil {
-				log.Errorf("Task %s execution error: %v", t.Name, err)
+				log.Errorf("Task %s thực thi lỗi: %v", t.Name, err)
 				return
 			}
 		}
@@ -67,14 +67,14 @@ func (t *Task) ExecuteWithTimeout() error {
 
 	select {
 	case <-ctx.Done():
-		log.Errorf("Task %s execution timed out, reloading", t.Name)
+		log.Errorf("Task %s hết thời gian thực thi, đang tải lại", t.Name)
 		if t.ReloadCh != nil {
 			select {
 			case t.ReloadCh <- struct{}{}:
 			default:
 			}
 		} else {
-			log.Panic("Reload failed")
+			log.Panic("Tải lại thất bại")
 		}
 		return nil
 	case err := <-done:
@@ -96,5 +96,5 @@ func (t *Task) safeStop() {
 
 func (t *Task) Close() {
 	t.safeStop()
-	log.Warningf("Task %s stopped", t.Name)
+	log.Warningf("Task %s đã dừng", t.Name)
 }

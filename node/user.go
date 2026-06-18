@@ -22,13 +22,13 @@ func (c *Controller) reportUserTrafficTask(ctx context.Context) (err error) {
 			log.WithFields(log.Fields{
 				"tag": c.tag,
 				"err": err,
-			}).Info("Report user traffic failed")
+			}).Info("Báo cáo traffic người dùng thất bại")
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				return err
 			}
 		} else {
-			log.WithField("tag", c.tag).Infof("Report %d users traffic", len(userTraffic))
-			//log.WithField("tag", c.tag).Debugf("User traffic: %+v", userTraffic)
+			log.WithField("tag", c.tag).Infof("Đã báo cáo traffic của %d người dùng", len(userTraffic))
+			//log.WithField("tag", c.tag).Debugf("Traffic người dùng: %+v", userTraffic)
 		}
 	}
 
@@ -36,7 +36,7 @@ func (c *Controller) reportUserTrafficTask(ctx context.Context) (err error) {
 		log.WithFields(log.Fields{
 			"tag": c.tag,
 			"err": err,
-		}).Info("Get online device failed")
+		}).Info("Lấy thiết bị online thất bại")
 	} else if len(*onlineDevice) > 0 {
 		var result []panel.OnlineUser
 		var nocountUID = make(map[int]struct{})
@@ -62,13 +62,13 @@ func (c *Controller) reportUserTrafficTask(ctx context.Context) (err error) {
 				log.WithFields(log.Fields{
 					"tag": c.tag,
 					"err": err,
-				}).Info("Report online users failed")
+				}).Info("Báo cáo người dùng online thất bại")
 				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 					return err
 				}
 			}
 		}
-		log.WithField("tag", c.tag).Infof("Total %d online users, %d Reported", len(*onlineDevice), len(result))
+		log.WithField("tag", c.tag).Infof("Tổng %d người dùng online, đã báo cáo %d", len(*onlineDevice), len(result))
 	}
 
 	return nil

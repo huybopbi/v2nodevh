@@ -26,10 +26,10 @@ func (c *Controller) startTasks(node *panel.NodeInfo) {
 		Execute:  c.reportUserTrafficTask,
 		ReloadCh: c.server.ReloadCh,
 	}
-	log.WithField("tag", c.tag).Info("Start monitor node status")
+	log.WithField("tag", c.tag).Info("Bắt đầu theo dõi trạng thái node")
 	// delay to start nodeInfoMonitor
 	_ = c.nodeInfoMonitorPeriodic.Start(false)
-	log.WithField("tag", c.tag).Info("Start report node status")
+	log.WithField("tag", c.tag).Info("Bắt đầu báo cáo trạng thái node")
 	_ = c.userReportPeriodic.Start(false)
 	if node.Security == panel.Tls {
 		switch c.info.Common.CertInfo.CertMode {
@@ -41,7 +41,7 @@ func (c *Controller) startTasks(node *panel.NodeInfo) {
 				Execute:  c.renewCertTask,
 				ReloadCh: c.server.ReloadCh,
 			}
-			log.WithField("tag", c.tag).Info("Start renew cert")
+			log.WithField("tag", c.tag).Info("Bắt đầu gia hạn chứng chỉ")
 			// delay to start renewCert
 			_ = c.renewCertPeriodic.Start(true)
 		}
@@ -58,23 +58,23 @@ func (c *Controller) nodeInfoMonitor(ctx context.Context) (err error) {
 		log.WithFields(log.Fields{
 			"tag": c.tag,
 			"err": err,
-		}).Error("Get node info failed")
+		}).Error("Lấy thông tin node thất bại")
 		return nil
 	}
 	if newN != nil {
 		log.WithFields(log.Fields{
 			"tag": c.tag,
-		}).Error("Got new node info, reload")
+		}).Error("Đã nhận thông tin node mới, tải lại")
 		if c.server.ReloadCh != nil {
 			select {
 			case c.server.ReloadCh <- struct{}{}:
 			default:
 			}
 		} else {
-			log.Panic("Reload failed")
+			log.Panic("Tải lại thất bại")
 		}
 	}
-	log.WithField("tag", c.tag).Debug("Node info no change")
+	log.WithField("tag", c.tag).Debug("Thông tin node không thay đổi")
 
 	// get user info
 	newU, err := c.apiClient.GetUserList(ctx)
@@ -85,7 +85,7 @@ func (c *Controller) nodeInfoMonitor(ctx context.Context) (err error) {
 		log.WithFields(log.Fields{
 			"tag": c.tag,
 			"err": err,
-		}).Error("Get user list failed")
+		}).Error("Lấy danh sách người dùng thất bại")
 		return nil
 	}
 	// get user alive
@@ -97,7 +97,7 @@ func (c *Controller) nodeInfoMonitor(ctx context.Context) (err error) {
 		log.WithFields(log.Fields{
 			"tag": c.tag,
 			"err": err,
-		}).Error("Get alive list failed")
+		}).Error("Lấy danh sách online thất bại")
 		return nil
 	}
 
@@ -107,7 +107,7 @@ func (c *Controller) nodeInfoMonitor(ctx context.Context) (err error) {
 	}
 	// node no changed, check users
 	if len(newU) == 0 {
-		log.WithField("tag", c.tag).Debug("User list no change")
+		log.WithField("tag", c.tag).Debug("Danh sách người dùng không thay đổi")
 		return nil
 	}
 	deleted, added, modified := compareUserList(c.userList, newU)
@@ -118,7 +118,7 @@ func (c *Controller) nodeInfoMonitor(ctx context.Context) (err error) {
 			log.WithFields(log.Fields{
 				"tag": c.tag,
 				"err": err,
-			}).Error("Delete users failed")
+			}).Error("Xóa người dùng thất bại")
 			return nil
 		}
 	}
@@ -133,7 +133,7 @@ func (c *Controller) nodeInfoMonitor(ctx context.Context) (err error) {
 			log.WithFields(log.Fields{
 				"tag": c.tag,
 				"err": err,
-			}).Error("Add users failed")
+			}).Error("Thêm người dùng thất bại")
 			return nil
 		}
 	}
@@ -142,6 +142,6 @@ func (c *Controller) nodeInfoMonitor(ctx context.Context) (err error) {
 		c.limiter.UpdateUser(c.tag, added, deleted, modified)
 	}
 	c.userList = newU
-	log.WithField("tag", c.tag).Infof("%d user deleted, %d user added, %d user modified", len(deleted), len(added), len(modified))
+	log.WithField("tag", c.tag).Infof("Đã xóa %d người dùng, thêm %d người dùng, sửa %d người dùng", len(deleted), len(added), len(modified))
 	return nil
 }

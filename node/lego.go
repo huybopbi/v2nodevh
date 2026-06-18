@@ -37,7 +37,7 @@ func NewLego(config *panel.CertInfo) (*Lego, error) {
 		fmt.Sprintf("user-%s.json", config.Email)),
 		config.Email)
 	if err != nil {
-		return nil, fmt.Errorf("create user error: %s", err)
+		return nil, fmt.Errorf("lỗi tạo người dùng: %s", err)
 	}
 	c := lego.NewConfig(user)
 	c.Certificate.KeyType = certcrypto.RSA2048
@@ -51,7 +51,7 @@ func NewLego(config *panel.CertInfo) (*Lego, error) {
 	}
 	err = l.SetProvider()
 	if err != nil {
-		return nil, fmt.Errorf("set provider error: %s", err)
+		return nil, fmt.Errorf("lỗi thiết lập provider: %s", err)
 	}
 	return &l, nil
 }
@@ -60,7 +60,7 @@ func checkPath(p string) error {
 	if !file.IsExist(path.Dir(p)) {
 		err := os.MkdirAll(path.Dir(p), 0755)
 		if err != nil {
-			return fmt.Errorf("create dir error: %s", err)
+			return fmt.Errorf("lỗi tạo thư mục: %s", err)
 		}
 	}
 	return nil
@@ -79,11 +79,11 @@ func (l *Lego) SetProvider() error {
 		}
 		p, err := dns.NewDNSChallengeProviderByName(l.config.Provider)
 		if err != nil {
-			return fmt.Errorf("create dns challenge provider error: %s", err)
+			return fmt.Errorf("lỗi tạo DNS challenge provider: %s", err)
 		}
 		err = l.client.Challenge.SetDNS01Provider(p)
 		if err != nil {
-			return fmt.Errorf("set dns provider error: %s", err)
+			return fmt.Errorf("lỗi thiết lập DNS provider: %s", err)
 		}
 	}
 	return nil
@@ -96,11 +96,11 @@ func (l *Lego) CreateCert() (err error) {
 	}
 	certificates, err := l.client.Certificate.Obtain(request)
 	if err != nil {
-		return fmt.Errorf("obtain certificate error: %s", err)
+		return fmt.Errorf("lỗi lấy chứng chỉ: %s", err)
 	}
 	err = l.writeCert(certificates)
 	if err != nil {
-		return fmt.Errorf("write certificate error: %s", err)
+		return fmt.Errorf("lỗi ghi chứng chỉ: %s", err)
 	}
 	return nil
 }
@@ -108,12 +108,12 @@ func (l *Lego) CreateCert() (err error) {
 func (l *Lego) RenewCert() error {
 	file, err := os.ReadFile(l.config.CertFile)
 	if err != nil {
-		return fmt.Errorf("read cert file error: %s", err)
+		return fmt.Errorf("lỗi đọc file chứng chỉ: %s", err)
 	}
 	if e, err := l.CheckCert(file); !e {
 		return nil
 	} else if err != nil {
-		return fmt.Errorf("check cert error: %s", err)
+		return fmt.Errorf("lỗi kiểm tra chứng chỉ: %s", err)
 	}
 	res, err := l.client.Certificate.Renew(certificate.Resource{
 		Domain:      l.config.CertDomain,
@@ -124,7 +124,7 @@ func (l *Lego) RenewCert() error {
 	}
 	err = l.writeCert(res)
 	if err != nil {
-		return fmt.Errorf("write certificate error: %s", err)
+		return fmt.Errorf("lỗi ghi chứng chỉ: %s", err)
 	}
 	return nil
 }
@@ -148,7 +148,7 @@ func (l *Lego) parseParams(path string) string {
 func (l *Lego) writeCert(certificates *certificate.Resource) error {
 	err := checkPath(l.config.CertFile)
 	if err != nil {
-		return fmt.Errorf("check path error: %s", err)
+		return fmt.Errorf("lỗi kiểm tra đường dẫn: %s", err)
 	}
 	err = os.WriteFile(l.parseParams(l.config.CertFile), certificates.Certificate, 0644)
 	if err != nil {
@@ -156,7 +156,7 @@ func (l *Lego) writeCert(certificates *certificate.Resource) error {
 	}
 	err = checkPath(l.config.KeyFile)
 	if err != nil {
-		return fmt.Errorf("check path error: %s", err)
+		return fmt.Errorf("lỗi kiểm tra đường dẫn: %s", err)
 	}
 	err = os.WriteFile(l.parseParams(l.config.KeyFile), certificates.PrivateKey, 0644)
 	if err != nil {
@@ -210,13 +210,13 @@ func NewLegoUser(path string, email string) (*User, error) {
 func registerUser(user *User, path string) error {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
-		return fmt.Errorf("generate key error: %s", err)
+		return fmt.Errorf("lỗi tạo key: %s", err)
 	}
 	user.key = privateKey
 	c := lego.NewConfig(user)
 	client, err := lego.NewClient(c)
 	if err != nil {
-		return fmt.Errorf("create lego client error: %s", err)
+		return fmt.Errorf("lỗi tạo client lego: %s", err)
 	}
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	if err != nil {
@@ -225,7 +225,7 @@ func registerUser(user *User, path string) error {
 	user.Registration = reg
 	err = user.Save(path)
 	if err != nil {
-		return fmt.Errorf("save user error: %s", err)
+		return fmt.Errorf("lỗi lưu người dùng: %s", err)
 	}
 	return nil
 }
@@ -241,7 +241,7 @@ func EncodePrivate(privKey *ecdsa.PrivateKey) (string, error) {
 func (u *User) Save(path string) error {
 	err := checkPath(path)
 	if err != nil {
-		return fmt.Errorf("check path error: %s", err)
+		return fmt.Errorf("lỗi kiểm tra đường dẫn: %s", err)
 	}
 	u.KeyEncoded, _ = EncodePrivate(u.key.(*ecdsa.PrivateKey))
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
@@ -250,7 +250,7 @@ func (u *User) Save(path string) error {
 	}
 	err = json.NewEncoder(f).Encode(u)
 	if err != nil {
-		return fmt.Errorf("marshal json error: %s", err)
+		return fmt.Errorf("lỗi mã hóa JSON: %s", err)
 	}
 	u.KeyEncoded = ""
 	return nil
@@ -266,16 +266,16 @@ func (u *User) DecodePrivate(pemEncodedPriv string) (*ecdsa.PrivateKey, error) {
 func (u *User) Load(path string) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("open file error: %s", err)
+		return fmt.Errorf("lỗi mở file: %s", err)
 	}
 
 	err = json.Unmarshal(data, u)
 	if err != nil {
-		return fmt.Errorf("unmarshal json error: %s", err)
+		return fmt.Errorf("lỗi giải mã JSON: %s", err)
 	}
 	u.key, err = u.DecodePrivate(u.KeyEncoded)
 	if err != nil {
-		return fmt.Errorf("decode private key error: %s", err)
+		return fmt.Errorf("lỗi giải mã private key: %s", err)
 	}
 	return nil
 }

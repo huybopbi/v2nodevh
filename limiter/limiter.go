@@ -73,7 +73,7 @@ func GetLimiter(tag string) (info *Limiter, err error) {
 	info, ok := limiter[tag]
 	limitLock.RUnlock()
 	if !ok {
-		return nil, errors.New("not found")
+		return nil, errors.New("không tìm thấy")
 	}
 	return info, nil
 }
@@ -135,7 +135,7 @@ func (l *Limiter) UpdateDynamicSpeedLimit(tag, uuid string, limit int, expire ti
 		info.DynamicSpeedLimit = limit
 		info.ExpireTime = expire.Unix()
 	} else {
-		return errors.New("not found")
+		return errors.New("không tìm thấy")
 	}
 	return nil
 }

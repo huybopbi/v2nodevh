@@ -37,7 +37,7 @@ func (v *V2Core) addInbound(config *core.InboundHandlerConfig) error {
 	}
 	handler, ok := rawHandler.(inbound.Handler)
 	if !ok {
-		return fmt.Errorf("not an InboundHandler: %s", err)
+		return fmt.Errorf("không phải InboundHandler: %s", err)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -67,7 +67,7 @@ func buildInbound(nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerCon
 	case "anytls":
 		err = buildAnyTLS(nodeInfo, in)
 	default:
-		return nil, fmt.Errorf("unsupported node type: %s", nodeInfo.Type)
+		return nil, fmt.Errorf("loại node không được hỗ trợ: %s", nodeInfo.Type)
 	}
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func buildInbound(nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerCon
 		n := &NetworkSettingsProxyProtocol{}
 		err := json.Unmarshal(nodeInfo.Common.NetworkSettings, n)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshal network settings error: %s", err)
+			return nil, fmt.Errorf("lỗi giải mã cài đặt network: %s", err)
 		}
 		if n.AcceptProxyProtocol {
 			if in.StreamSetting == nil {
@@ -117,7 +117,7 @@ func buildInbound(nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerCon
 	switch nodeInfo.Security {
 	case panel.Tls:
 		if nodeInfo.Common.CertInfo == nil {
-			return nil, errors.New("the CertInfo is not vail")
+			return nil, errors.New("CertInfo không hợp lệ")
 		}
 		switch nodeInfo.Common.CertInfo.CertMode {
 		case "none", "":
@@ -160,7 +160,7 @@ func buildInbound(nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerCon
 			dest,
 			v.TlsSettings.ServerPort))
 		if err != nil {
-			return nil, fmt.Errorf("marshal reality dest error: %s", err)
+			return nil, fmt.Errorf("lỗi mã hóa reality dest: %s", err)
 		}
 		in.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
 			Dest:        d,
@@ -198,14 +198,14 @@ func buildVLess(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig)
 			parts = append(parts, encSettings.PrivateKey)
 			decryption = strings.Join(parts, ".")
 		default:
-			return fmt.Errorf("vless decryption method %s is not support", nodeInfo.Common.Encryption)
+			return fmt.Errorf("phương thức giải mã vless %s không được hỗ trợ", nodeInfo.Common.Encryption)
 		}
 	}
 	s, err := json.Marshal(&coreConf.VLessInboundConfig{
 		Decryption: decryption,
 	})
 	if err != nil {
-		return fmt.Errorf("marshal vless config error: %s", err)
+		return fmt.Errorf("lỗi mã hóa cấu hình vless: %s", err)
 	}
 	inbound.Settings = (*json.RawMessage)(&s)
 	if len(v.NetworkSettings) == 0 {
@@ -217,30 +217,30 @@ func buildVLess(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig)
 	case "tcp":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.TCPSettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal tcp settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt tcp: %s", err)
 		}
 	case "ws":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.WSSettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal ws settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt ws: %s", err)
 		}
 	case "grpc":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.GRPCSettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal grpc settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt grpc: %s", err)
 		}
 	case "httpupgrade":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.HTTPUPGRADESettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal httpupgrade settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt httpupgrade: %s", err)
 		}
 	case "splithttp", "xhttp":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.SplitHTTPSettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal xhttp settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt xhttp: %s", err)
 		}
 	default:
-		return errors.New("the network type is not vail")
+		return errors.New("loại network không hợp lệ")
 	}
 	return nil
 }
@@ -252,7 +252,7 @@ func buildVMess(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig)
 	var err error
 	s, err := json.Marshal(&coreConf.VMessInboundConfig{})
 	if err != nil {
-		return fmt.Errorf("marshal vmess settings error: %s", err)
+		return fmt.Errorf("lỗi mã hóa cài đặt vmess: %s", err)
 	}
 	inbound.Settings = (*json.RawMessage)(&s)
 	if len(v.NetworkSettings) == 0 {
@@ -264,30 +264,30 @@ func buildVMess(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig)
 	case "tcp":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.TCPSettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal tcp settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt tcp: %s", err)
 		}
 	case "ws":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.WSSettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal ws settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt ws: %s", err)
 		}
 	case "grpc":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.GRPCSettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal grpc settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt grpc: %s", err)
 		}
 	case "httpupgrade":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.HTTPUPGRADESettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal httpupgrade settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt httpupgrade: %s", err)
 		}
 	case "splithttp", "xhttp":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.SplitHTTPSettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal xhttp settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt xhttp: %s", err)
 		}
 	default:
-		return errors.New("the network type is not vail")
+		return errors.New("loại network không hợp lệ")
 	}
 	return nil
 }
@@ -297,7 +297,7 @@ func buildTrojan(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig
 	v := nodeInfo.Common
 	s, err := json.Marshal(&coreConf.TrojanServerConfig{})
 	if err != nil {
-		return fmt.Errorf("marshal trojan settings error: %s", err)
+		return fmt.Errorf("lỗi mã hóa cài đặt trojan: %s", err)
 	}
 	inbound.Settings = (*json.RawMessage)(&s)
 	network := v.Network
@@ -313,20 +313,20 @@ func buildTrojan(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig
 	case "tcp":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.TCPSettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal tcp settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt tcp: %s", err)
 		}
 	case "ws":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.WSSettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal ws settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt ws: %s", err)
 		}
 	case "grpc":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.GRPCSettings)
 		if err != nil {
-			return fmt.Errorf("unmarshal grpc settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt grpc: %s", err)
 		}
 	default:
-		return errors.New("the network type is not vail")
+		return errors.New("loại network không hợp lệ")
 	}
 	return nil
 }
@@ -346,7 +346,7 @@ func buildShadowsocks(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourC
 	p := make([]byte, 32)
 	_, err := rand.Read(p)
 	if err != nil {
-		return fmt.Errorf("generate random password error: %s", err)
+		return fmt.Errorf("lỗi tạo mật khẩu ngẫu nhiên: %s", err)
 	}
 	randomPasswd := hex.EncodeToString(p)
 	cipher := s.Cipher
@@ -367,7 +367,7 @@ func buildShadowsocks(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourC
 		shttp := &ShadowsocksHTTPNetworkSettings{}
 		err := json.Unmarshal(s.NetworkSettings, shttp)
 		if err != nil {
-			return fmt.Errorf("unmarshal shadowsocks settings error: %s", err)
+			return fmt.Errorf("lỗi giải mã cài đặt shadowsocks: %s", err)
 		}
 		// HTTP obfuscation requires TCP only (PROXY protocol can work with UDP)
 		if shttp.Path != "" || shttp.Host != "" {
@@ -410,7 +410,7 @@ func buildShadowsocks(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourC
 	sets, err := json.Marshal(settings)
 	inbound.Settings = (*json.RawMessage)(&sets)
 	if err != nil {
-		return fmt.Errorf("marshal shadowsocks settings error: %s", err)
+		return fmt.Errorf("lỗi mã hóa cài đặt shadowsocks: %s", err)
 	}
 	return nil
 }
@@ -451,7 +451,7 @@ func buildHysteria2(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourCon
 	inbound.Settings = (*json.RawMessage)(&sets)
 	inbound.StreamSetting.HysteriaSettings = hysteriasetting
 	if err != nil {
-		return fmt.Errorf("marshal hysteria2 settings error: %s", err)
+		return fmt.Errorf("lỗi mã hóa cài đặt hysteria2: %s", err)
 	}
 	return nil
 }
@@ -468,7 +468,7 @@ func buildTuic(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) 
 	sets, err := json.Marshal(settings)
 	inbound.Settings = (*json.RawMessage)(&sets)
 	if err != nil {
-		return fmt.Errorf("marshal tuic settings error: %s", err)
+		return fmt.Errorf("lỗi mã hóa cài đặt tuic: %s", err)
 	}
 	return nil
 }
@@ -486,36 +486,36 @@ func buildAnyTLS(nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig
 		case "tcp":
 			err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.TCPSettings)
 			if err != nil {
-				return fmt.Errorf("unmarshal tcp settings error: %s", err)
+				return fmt.Errorf("lỗi giải mã cài đặt tcp: %s", err)
 			}
 		case "ws":
 			err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.WSSettings)
 			if err != nil {
-				return fmt.Errorf("unmarshal ws settings error: %s", err)
+				return fmt.Errorf("lỗi giải mã cài đặt ws: %s", err)
 			}
 		case "grpc":
 			err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.GRPCSettings)
 			if err != nil {
-				return fmt.Errorf("unmarshal grpc settings error: %s", err)
+				return fmt.Errorf("lỗi giải mã cài đặt grpc: %s", err)
 			}
 		case "httpupgrade":
 			err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.HTTPUPGRADESettings)
 			if err != nil {
-				return fmt.Errorf("unmarshal httpupgrade settings error: %s", err)
+				return fmt.Errorf("lỗi giải mã cài đặt httpupgrade: %s", err)
 			}
 		case "splithttp", "xhttp":
 			err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.SplitHTTPSettings)
 			if err != nil {
-				return fmt.Errorf("unmarshal xhttp settings error: %s", err)
+				return fmt.Errorf("lỗi giải mã cài đặt xhttp: %s", err)
 			}
 		default:
-			return errors.New("the network type is not vail")
+			return errors.New("loại network không hợp lệ")
 		}
 	}
 	sets, err := json.Marshal(settings)
 	inbound.Settings = (*json.RawMessage)(&sets)
 	if err != nil {
-		return fmt.Errorf("marshal anytls settings error: %s", err)
+		return fmt.Errorf("lỗi mã hóa cài đặt anytls: %s", err)
 	}
 	return nil
 }

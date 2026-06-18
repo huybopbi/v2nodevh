@@ -11,7 +11,7 @@ import (
 func (p *Conf) Watch(filePath string, reload func()) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return fmt.Errorf("new watcher error: %s", err)
+		return fmt.Errorf("lỗi tạo watcher: %s", err)
 	}
 	go func() {
 		var pre time.Time
@@ -28,25 +28,25 @@ func (p *Conf) Watch(filePath string, reload func()) error {
 				pre = time.Now()
 				go func() {
 					time.Sleep(5 * time.Second)
-					log.Println("config file changed, reloading...")
+					log.Println("File cấu hình đã thay đổi, đang tải lại...")
 					*p = *New()
 					err := p.LoadFromPath(filePath)
 					if err != nil {
-						log.Printf("reload config error: %s", err)
+						log.Printf("Lỗi tải lại cấu hình: %s", err)
 					}
 					reload()
-					log.Println("reload config success")
+					log.Println("Tải lại cấu hình thành công")
 				}()
 			case err := <-watcher.Errors:
 				if err != nil {
-					log.Printf("File watcher error: %s", err)
+					log.Printf("Lỗi watcher file: %s", err)
 				}
 			}
 		}
 	}()
 	err = watcher.Add(filePath)
 	if err != nil {
-		return fmt.Errorf("watch file error: %s", err)
+		return fmt.Errorf("lỗi theo dõi file: %s", err)
 	}
 	return nil
 }

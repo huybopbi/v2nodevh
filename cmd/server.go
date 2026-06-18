@@ -24,7 +24,7 @@ var (
 
 var serverCommand = cobra.Command{
 	Use:   "server",
-	Short: "Run v2node server",
+	Short: "Chạy server v2node",
 	Run:   serverHandle,
 	Args:  cobra.NoArgs,
 }
@@ -32,10 +32,10 @@ var serverCommand = cobra.Command{
 func init() {
 	serverCommand.PersistentFlags().
 		StringVarP(&config, "config", "c",
-			"/etc/v2node/config.json", "config file path")
+			"/etc/v2node/config.json", "đường dẫn file cấu hình")
 	serverCommand.PersistentFlags().
 		BoolVarP(&watch, "watch", "w",
-			true, "watch file path change")
+			true, "theo dõi thay đổi file cấu hình")
 	command.AddCommand(&serverCommand)
 }
 
@@ -49,7 +49,7 @@ func serverHandle(_ *cobra.Command, _ []string) {
 		PadLevelText:     false,
 	})
 	if err != nil {
-		log.WithField("err", err).Error("Load config file failed")
+		log.WithField("err", err).Error("Tải file cấu hình thất bại")
 		return
 	}
 	switch c.LogConfig.Level {
@@ -65,16 +65,16 @@ func serverHandle(_ *cobra.Command, _ []string) {
 	if c.LogConfig.Output != "" {
 		f, err := os.OpenFile(c.LogConfig.Output, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
-			log.WithField("err", err).Error("Open log file failed, using stdout instead")
+			log.WithField("err", err).Error("Mở file log thất bại, chuyển sang dùng stdout")
 		}
 		log.SetOutput(f)
 	}
 	// Enable pprof if configured
 	if c.PprofPort != 0 {
 		go func() {
-			log.Infof("Starting pprof server on :%d", c.PprofPort)
+			log.Infof("Đang khởi động server pprof trên :%d", c.PprofPort)
 			if err := http.ListenAndServe(fmt.Sprintf("127.0.0.1:%d", c.PprofPort), nil); err != nil {
-				log.WithField("err", err).Error("pprof server failed")
+				log.WithField("err", err).Error("Server pprof thất bại")
 			}
 		}()
 	}
@@ -83,27 +83,27 @@ func serverHandle(_ *cobra.Command, _ []string) {
 	//get node info
 	nodes, err := node.New(c.NodeConfigs)
 	if err != nil {
-		log.WithField("err", err).Error("Get node info failed")
+		log.WithField("err", err).Error("Lấy thông tin node thất bại")
 		return
 	}
-	log.Info("Got nodes info from server")
+	log.Info("Đã lấy thông tin node từ server")
 	//core
 	var reloadCh = make(chan struct{}, 1)
 	v2core := core.New(c)
 	v2core.ReloadCh = reloadCh
 	err = v2core.Start(nodes.NodeInfos)
 	if err != nil {
-		log.WithField("err", err).Error("Start core failed")
+		log.WithField("err", err).Error("Khởi động core thất bại")
 		return
 	}
 	defer v2core.Close()
 	//node
 	err = nodes.Start(c.NodeConfigs, v2core)
 	if err != nil {
-		log.WithField("err", err).Error("Run nodes failed")
+		log.WithField("err", err).Error("Chạy node thất bại")
 		return
 	}
-	log.Info("Nodes started")
+	log.Info("Các node đã khởi động")
 	if watch {
 		// On file change, just signal reload; do not run reload concurrently here
 		err = c.Watch(config, func() {
@@ -113,7 +113,7 @@ func serverHandle(_ *cobra.Command, _ []string) {
 			}
 		})
 		if err != nil {
-			log.WithField("err", err).Error("start watch failed")
+			log.WithField("err", err).Error("Bắt đầu theo dõi file thất bại")
 			return
 		}
 	}
@@ -126,14 +126,14 @@ func serverHandle(_ *cobra.Command, _ []string) {
 	for {
 		select {
 		case <-osSignals:
-			log.Info("收到退出信号，正在关闭程序...")
+			log.Info("Đã nhận tín hiệu thoát, đang tắt chương trình...")
 			os.Exit(0)
 		case <-reloadCh:
-			log.Info("收到重启信号，正在重新加载配置...")
+			log.Info("Đã nhận tín hiệu khởi động lại, đang tải lại cấu hình...")
 			if err := reload(config, &nodes, &v2core); err != nil {
-				log.WithField("err", err).Panic("重启失败")
+				log.WithField("err", err).Panic("Khởi động lại thất bại")
 			}
-			log.Info("重启成功")
+			log.Info("Khởi động lại thành công")
 		}
 	}
 }
@@ -171,9 +171,9 @@ func reload(config string, nodes **node.Node, v2core **core.V2Core) error {
 	if newConf.LogConfig.Output != "" {
 		f, err := os.OpenFile(newConf.LogConfig.Output, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
-			log.WithField("err", err).Error("Open log file failed, using stdout instead")
+			log.WithField("err", err).Error("Mở file log thất bại, chuyển sang dùng stdout")
 		} else {
-			// 关闭旧的日志文件（如果是文件）
+			// Đóng file log cũ nếu output hiện tại là file.
 			if oldWriter, ok := log.StandardLogger().Out.(*os.File); ok && oldWriter != os.Stdout && oldWriter != os.Stderr {
 				oldWriter.Close()
 			}

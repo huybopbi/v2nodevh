@@ -39,7 +39,7 @@ func (n *Node) Start(nodes []conf.NodeConfig, core *core.V2Core) error {
 	for i, node := range nodes {
 		err := n.controllers[i].Start(core)
 		if err != nil {
-			return fmt.Errorf("start node controller [%s-%d] error: %s",
+			return fmt.Errorf("lỗi khởi động controller node [%s-%d]: %s",
 				node.APIHost,
 				node.NodeID,
 				err)
@@ -52,7 +52,7 @@ func (n *Node) Close() error {
 	var err error
 	for _, c := range n.controllers {
 		if err = c.Close(); err != nil {
-			log.Errorf("close controller failed: %v", err)
+			log.Errorf("Đóng controller thất bại: %v", err)
 			return err
 		}
 	}

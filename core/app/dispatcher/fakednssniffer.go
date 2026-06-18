@@ -23,7 +23,7 @@ func newFakeDNSSniffer(ctx context.Context) (protocolSnifferWithMetadata, error)
 	}
 
 	if fakeDNSEngine == nil {
-		errNotInit := errors.New("FakeDNSEngine is not initialized, but such a sniffer is used").AtError()
+		errNotInit := errors.New("FakeDNSEngine chưa được khởi tạo nhưng sniffer này đang được dùng").AtError()
 		return protocolSnifferWithMetadata{}, errNotInit
 	}
 	return protocolSnifferWithMetadata{protocolSniffer: func(ctx context.Context, bytes []byte) (SniffResult, error) {
@@ -32,7 +32,7 @@ func newFakeDNSSniffer(ctx context.Context) (protocolSnifferWithMetadata, error)
 		if ob.Target.Network == net.Network_TCP || ob.Target.Network == net.Network_UDP {
 			domainFromFakeDNS := fakeDNSEngine.GetDomainFromFakeDNS(ob.Target.Address)
 			if domainFromFakeDNS != "" {
-				errors.LogInfo(ctx, "fake dns got domain: ", domainFromFakeDNS, " for ip: ", ob.Target.Address.String())
+				errors.LogInfo(ctx, "fake dns lấy được domain: ", domainFromFakeDNS, " cho ip: ", ob.Target.Address.String())
 				return &fakeDNSSniffResult{domainName: domainFromFakeDNS}, nil
 			}
 		}
@@ -110,10 +110,10 @@ func newFakeDNSThenOthers(ctx context.Context, fakeDNSSniffer protocolSnifferWit
 					}
 					return nil, common.ErrNoClue
 				}
-				errors.LogDebug(ctx, "ip address not in fake dns range, return as is")
+				errors.LogDebug(ctx, "địa chỉ ip không nằm trong dải fake dns, giữ nguyên")
 				return nil, common.ErrNoClue
 			}
-			errors.LogWarning(ctx, "fake dns sniffer did not set address in range option, assume false.")
+			errors.LogWarning(ctx, "fake dns sniffer chưa đặt tùy chọn address in range, giả định là false.")
 			return nil, common.ErrNoClue
 		},
 		metadataSniffer: false,

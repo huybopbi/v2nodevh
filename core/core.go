@@ -88,7 +88,7 @@ func getCore(c *conf.Conf, infos []*panel.NodeInfo) *core.Instance {
 	// Custom config
 	dnsConfig, outBoundConfig, routeConfig, err := GetCustomConfig(infos)
 	if err != nil {
-		log.WithField("err", err).Panic("failed to build custom config")
+		log.WithField("err", err).Panic("Build cấu hình tùy chỉnh thất bại")
 	}
 	// Inbound config
 	var inBoundConfig []*core.InboundHandlerConfig
@@ -123,8 +123,8 @@ func getCore(c *conf.Conf, infos []*panel.NodeInfo) *core.Instance {
 	}
 	server, err := core.New(config)
 	if err != nil {
-		log.WithField("err", err).Panic("failed to create instance")
+		log.WithField("err", err).Panic("Tạo instance thất bại")
 	}
-	log.Info("Xray Core Version: ", core.Version())
+	log.Info("Phiên bản Xray Core: ", core.Version())
 	return server
 }

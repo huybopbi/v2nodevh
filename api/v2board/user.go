@@ -45,7 +45,7 @@ func (c *Client) GetUserList(ctx context.Context) ([]UserInfo, error) {
 		return nil, err
 	}
 	if r == nil || r.RawResponse == nil {
-		return nil, fmt.Errorf("received nil response or raw response")
+		return nil, fmt.Errorf("nhận response nil hoặc raw response nil")
 	}
 	defer r.RawResponse.Body.Close()
 
@@ -56,14 +56,14 @@ func (c *Client) GetUserList(ctx context.Context) ([]UserInfo, error) {
 	if strings.Contains(r.Header().Get("Content-Type"), "application/x-msgpack") {
 		decoder := msgpack.NewDecoder(r.RawResponse.Body)
 		if err := decoder.Decode(userlist); err != nil {
-			return nil, fmt.Errorf("decode user list error: %w", err)
+			return nil, fmt.Errorf("lỗi giải mã danh sách người dùng: %w", err)
 		}
 	} else {
 		dec := jsontext.NewDecoder(r.RawResponse.Body)
 		for {
 			tok, err := dec.ReadToken()
 			if err != nil {
-				return nil, fmt.Errorf("decode user list error: %w", err)
+				return nil, fmt.Errorf("lỗi giải mã danh sách người dùng: %w", err)
 			}
 			if tok.Kind() == '"' && tok.String() == "users" {
 				break
@@ -71,19 +71,19 @@ func (c *Client) GetUserList(ctx context.Context) ([]UserInfo, error) {
 		}
 		tok, err := dec.ReadToken()
 		if err != nil {
-			return nil, fmt.Errorf("decode user list error: %w", err)
+			return nil, fmt.Errorf("lỗi giải mã danh sách người dùng: %w", err)
 		}
 		if tok.Kind() != '[' {
-			return nil, fmt.Errorf(`decode user list error: expected "users" array`)
+			return nil, fmt.Errorf(`lỗi giải mã danh sách người dùng: cần mảng "users"`)
 		}
 		for dec.PeekKind() != ']' {
 			val, err := dec.ReadValue()
 			if err != nil {
-				return nil, fmt.Errorf("decode user list error: read user object: %w", err)
+				return nil, fmt.Errorf("lỗi giải mã danh sách người dùng: đọc object người dùng: %w", err)
 			}
 			var u UserInfo
 			if err := json.Unmarshal(val, &u); err != nil {
-				return nil, fmt.Errorf("decode user list error: unmarshal user error: %w", err)
+				return nil, fmt.Errorf("lỗi giải mã danh sách người dùng: lỗi giải mã người dùng: %w", err)
 			}
 			userlist.Users = append(userlist.Users, u)
 		}
@@ -113,7 +113,7 @@ func (c *Client) GetUserAlive(ctx context.Context) (map[int]int, error) {
 	}
 	defer r.RawResponse.Body.Close()
 	if err := json.Unmarshal(r.Body(), c.AliveMap); err != nil {
-		fmt.Printf("unmarshal user alive list error: %s", err)
+		fmt.Printf("Lỗi giải mã danh sách người dùng online: %s", err)
 		c.AliveMap.Alive = make(map[int]int)
 	}
 
