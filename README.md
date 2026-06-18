@@ -9,7 +9,76 @@ Dịch vụ node V2board dựa trên nhân xray đã chỉnh sửa.
 ### Cài đặt một lệnh
 
 ```
-wget -N https://raw.githubusercontent.com/wyx2685/v2node/master/script/install.sh && bash install.sh
+wget -N https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/install.sh && bash install.sh
+```
+
+## Các script hỗ trợ
+
+### Script quản lý cơ bản
+
+Sau khi cài đặt, có thể dùng lệnh `v2node` để mở menu quản lý cơ bản:
+
+```bash
+v2node
+```
+
+Các lệnh thường dùng:
+
+```bash
+v2node start
+v2node stop
+v2node restart
+v2node status
+v2node log
+v2node generate
+v2node update
+v2node uninstall
+```
+
+### Script quản lý nâng cao
+
+`script/v2node-manager.sh` hỗ trợ quản lý node trong `/etc/v2node/config.json`:
+
+- Tự kiểm tra/cài `jq`
+- Tự tạo config mặc định nếu chưa có
+- Backup config trước khi sửa
+- Liệt kê, thêm, xóa, sửa node
+- Hỗ trợ NodeID dạng `1`, `1,3,5` hoặc `1-5`
+- Xem config, khôi phục backup, kiểm tra trạng thái, restart, install/update v2node
+
+Chạy menu tương tác:
+
+```bash
+bash <(curl -Ls https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/v2node-manager.sh)
+```
+
+Hoặc chạy lệnh trực tiếp:
+
+```bash
+bash script/v2node-manager.sh list
+bash script/v2node-manager.sh add
+bash script/v2node-manager.sh delete
+bash script/v2node-manager.sh edit
+bash script/v2node-manager.sh status
+```
+
+### Script cài đặt preset VPNFast
+
+`script/install-vpnfast.sh` là script cài đặt nhanh với thông số cài sẵn:
+
+- `ApiHost`: `https://my.vpnfast.org/`
+- `ApiKey`: `huydzvclhahahaha`
+
+Khi chạy chỉ cần truyền `NodeID`:
+
+```bash
+bash <(curl -Ls https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/install-vpnfast.sh) --node-id 1
+```
+
+Có thể chỉ định phiên bản:
+
+```bash
+bash <(curl -Ls https://raw.githubusercontent.com/huybopbi/v2nodevh/main/script/install-vpnfast.sh) v1.2.3 --node-id 1
 ```
 
 ## Build
